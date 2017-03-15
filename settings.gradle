@@ -1,1 +1,1 @@
-include ':app',':wavepulllayout'
+include ':wavepulllayout'

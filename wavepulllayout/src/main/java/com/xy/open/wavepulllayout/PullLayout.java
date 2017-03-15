@@ -146,8 +146,7 @@ public class PullLayout extends FrameLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        //获得子控件
-        //header、footer放到构造函数中，mChildView最后被inflate 始终是第1个child，
+        // get child
         mChildView = getChildAt(1);
     }
 
@@ -256,14 +255,14 @@ public class PullLayout extends FrameLayout {
             case MotionEvent.ACTION_UP:
                 if (mChildView != null) {
                     if (offsetY >= mPullHeight) {
-                        //拉到了最下面
+                        //bottom
                         animChildView(State.REFRESHING, offsetY, 0);
                         if (refreshListener != null) {
                             refreshListener.onRefresh(this);
                         }
                         centerAnim();
 
-                    } else {//没有拉到了最下面
+                    } else {//no bottom
                         animChildView(State.RELEASE, 0, 300);
                     }
 
