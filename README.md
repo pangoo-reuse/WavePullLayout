@@ -50,11 +50,12 @@ for your project
 	HorizontalScrollView
 	ViewPager
 
-	this project compile : support-v4 , nineoldandroids ,so  if you use this library ,you unnecessary compile "support-v4 , nineoldandroids" for your project
+	this project compile : support-v4 , nineoldandroids ,so  if you use this library ,
+	you unnecessary compile "support-v4 , nineoldandroids" for your project
 
 	thanks for NineOldAndroids :https://github.com/JakeWharton/NineOldAndroids
-
-
+`Gradle:`
+	compile 'com.xy.open.wavepulllayout:wavepulllayout:1.0.0'
 `this is GIF for you :`
   ![image](https://github.com/YongHsiung/WavePullLayout/blob/master/anim.gif)
 
