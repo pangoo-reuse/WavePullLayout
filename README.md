@@ -56,7 +56,7 @@ for your project
 
 
 `this is GIF for you :`
-  ![image](https://github.com/YourAcountName/ProjectName/blob/master/anim.gif )
+  ![image](https://github.com/YongHsiung/WavePullLayout/blob/master/anim.gif)
 
 
 
