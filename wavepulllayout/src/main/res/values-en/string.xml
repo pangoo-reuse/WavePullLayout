@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="refreshing">refreshing...</string>
+    <string name="pulling">pulling...</string>
+    <string name="release_loading">release loading...</string>
+</resources>

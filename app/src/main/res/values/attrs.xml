@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="waveRefreshLayout">
+        <attr name="xy_bgColor" format="color|reference" />
+        <attr name="xy_waveColor" format="color|reference" />
+        <attr name="xy_textColor" format="color|reference" />
+        <attr name="xy_textSize" format="dimension" />
+        <attr name="xy_pullHeight" format="dimension" />
+        <attr name="xy_headerHeight" format="dimension" />
+        <attr name="xy_headLeftImage" format="reference"/>
+        <attr name="xy_headRightImage" format="reference"/>
+        <attr name="xy_headCenterImage" format="reference"/>
+        <attr name="xy_headCenterSuccessImage" format="reference"/>
+    </declare-styleable>
+</resources>

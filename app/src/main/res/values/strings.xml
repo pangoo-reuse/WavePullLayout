@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PullLayout</string>
+    <style name="pulling">下拉加载...</style>
+</resources>

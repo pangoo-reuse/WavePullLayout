@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xy.open.wavepulllayout.PullLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pull"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:xy_headCenterImage="@mipmap/main_gold"
+    app:xy_headCenterSuccessImage="@mipmap/main_success"
+    app:xy_headLeftImage="@mipmap/main_left_huaxing"
+    app:xy_headRightImage="@mipmap/main_right_xinlang"
+    app:xy_textColor="@color/colorAccent"
+    app:xy_textSize="15sp"
+    app:xy_waveColor="@color/colorAccent"
+    app:xy_bgColor="@color/colorPrimaryDark"
+    app:xy_pullHeight="180dp"
+    app:xy_headerHeight="100dp"
+
+    >
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary" />
+
+
+</com.xy.open.wavepulllayout.PullLayout>

@@ -1,0 +1,474 @@
+package com.xy.open.wavepulllayout;
+
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Build;
+import android.support.annotation.AttrRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+
+import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
+
+import static com.xy.open.wavepulllayout.util.ViewUtil.dp2px;
+
+
+/**
+ * Created by 171842474@qq.com on 2017/3/14.
+ */
+
+public class PullLayout extends FrameLayout {
+    private HeaderLayout mHeadLayout;
+    private float mStartTouchY;
+    private View mChildView;
+    private float mCurrentY;
+    private float mPullHeight;
+    private float mHeaderHeight;
+    private static DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(10);
+    private RefreshListener refreshListener;
+    private ImageView centerImage;
+    private int bgColor;
+    private int waveColor;
+
+    public PullLayout(@NonNull Context context) {
+        this(context, null);
+    }
+
+    public PullLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public PullLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(attrs);
+    }
+
+    private void init(AttributeSet attrs) {
+        //add header
+        if (attrs == null) return;
+        TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.waveRefreshLayout);
+
+        bgColor = array.getColor(R.styleable.waveRefreshLayout_xy_bgColor, Color.TRANSPARENT);
+        waveColor = array.getColor(R.styleable.waveRefreshLayout_xy_waveColor, Color.GRAY);
+        float headerHeight = array.getDimension(R.styleable.waveRefreshLayout_xy_headerHeight, mHeaderHeight);
+        float pullHeight = array.getDimension(R.styleable.waveRefreshLayout_xy_pullHeight, mPullHeight);
+        int textColor = array.getColor(R.styleable.waveRefreshLayout_xy_textColor, Color.GRAY);
+        float textSize = array.getDimension(R.styleable.waveRefreshLayout_xy_textSize, dp2px(getContext(),15));
+        int headerLeftImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headLeftImage, 0);
+        int headerRightImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headRightImage, 0);
+        int headerCenterImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterImage, 0);
+        int headerCenterSuccessImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterSuccessImage, 0);
+        mHeaderHeight = headerHeight == 0 ? dp2px(getContext(),150) :headerHeight;
+
+        mPullHeight = pullHeight == 0 ? dp2px(getContext(),100) :pullHeight;
+
+        if (mHeadLayout == null) {
+            mHeadLayout = new HeaderLayout(getContext());
+            mHeadLayout.setWaveColor(waveColor);
+            mHeadLayout.setColor(bgColor);
+            mHeadLayout.setTextColor(textColor);
+            mHeadLayout.setTextSize(textSize);
+            mHeadLayout.setLeftBitmap(BitmapFactory.decodeResource(getResources(),headerLeftImage));
+            mHeadLayout.setRightBitmap(BitmapFactory.decodeResource(getResources(),headerRightImage));
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mHeadLayout.setElevation(getElevation());
+            }
+            //添加头部
+            LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.TOP|Gravity.CENTER;
+            mHeadLayout.setLayoutParams(params);
+            centerImage = new ImageView(getContext());
+            Bitmap normal = BitmapFactory.decodeResource(getResources(), headerCenterImage);
+            Bitmap success = BitmapFactory.decodeResource(getResources(), headerCenterSuccessImage);
+            centerImage.setImageBitmap(normal);
+            LayoutParams cpms = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            centerImage.setLayoutParams(cpms);
+            centerImage.setTag("PLACEHOLDER");
+            initCenter(normal, success);
+            this.addView(mHeadLayout);
+        }
+        array.recycle();
+        array.recycle();
+    }
+
+
+
+    private Bitmap[] centerBits;
+    private void initCenter(Bitmap normal, Bitmap success) {
+        if (centerBits == null)
+            centerBits = new Bitmap[2];
+        centerBits[0] = normal;
+        centerBits[1] = success;
+        setHeaderCenter(centerBits[0]);
+    }
+
+    private void setState(State state) {
+        this.state = state;
+    }
+
+    private State getState() {
+        return state;
+    }
+
+    private enum State {
+        IDLE, DRAGGING, RELEASE, REFRESHING, PERREFRESHING, LOADFINISH;
+    }
+
+    private State state = State.IDLE;
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+    }
+
+    private void resetCenter() {
+        if (centerImage != null) {
+            if (centerBits != null)
+                centerImage.setImageBitmap(centerBits[0]);
+        }
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        //获得子控件
+        //header、footer放到构造函数中，mChildView最后被inflate 始终是第1个child，
+        mChildView = getChildAt(1);
+    }
+
+    private boolean canChildScrollUp() {
+        return ViewCompat.canScrollVertically(mChildView, -1);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                resetCenter();
+                mStartTouchY = ev.getY();
+                if (state != State.IDLE) {
+                    return true;
+                }
+
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float dy = ev.getY() - mStartTouchY;
+                if (dy > 0 && !canChildScrollUp()) {
+                    state = State.REFRESHING;
+                    return true;
+                }
+                break;
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    private float constrains(float input, float a, float b) {
+        float result = input;
+        final float min = Math.min(a, b);
+        final float max = Math.max(a, b);
+        result = result > min ? result : min;
+        result = result < max ? result : max;
+        return result;
+    }
+
+    public void setOnRefreshListener(RefreshListener refreshListener) {
+        this.refreshListener = refreshListener;
+    }
+
+
+    private void onTranslationYChanged(float translationY) {
+        switch (getState()) {
+            case DRAGGING:
+            case RELEASE:
+                mHeadLayout.mHeaderHeight = Math.min(translationY / 2, mHeaderHeight);
+                mHeadLayout.mPullHeight = translationY;
+                break;
+            case REFRESHING:
+                mHeadLayout.mHeaderHeight = mHeaderHeight;
+                mHeadLayout.mPullHeight = mPullHeight;
+                break;
+
+            case IDLE:
+                mHeadLayout.mHeaderHeight = 0;
+                mHeadLayout.mPullHeight = 0;
+                break;
+        }
+        mHeadLayout.postInvalidate();
+    }
+
+    private float offsetY;
+
+    @Override
+    public final boolean onTouchEvent(MotionEvent e) {
+        switch (e.getAction()) {
+            case MotionEvent.ACTION_MOVE:
+                resetCenter();
+                mCurrentY = e.getY();
+                float dy = constrains(
+                        0,
+                        mPullHeight * 2,
+                        mCurrentY - mStartTouchY);
+                if (mChildView != null) {
+                    offsetY = decelerateInterpolator.getInterpolation(dy / mPullHeight / 2) * dy / 2;
+                    State state = State.DRAGGING;
+                    if (offsetY == mPullHeight) {
+                        state = State.PERREFRESHING;
+                        float[] location = mHeadLayout.getLocation();
+                        float left = location[0];
+                        float top = location[1];
+                        LayoutParams params = (LayoutParams) centerImage.getLayoutParams();
+                        params.leftMargin = (int) left;
+                        params.topMargin = (int) top;
+                        mHeadLayout.removeView(centerImage);
+                        mHeadLayout.addView(centerImage, params);
+                    } else {
+                        removeAnimView();
+//
+                    }
+                    LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+                    params.height = (int) offsetY;
+                    mHeadLayout.setLayoutParams(params);
+                    animChildView(state, offsetY, 0);
+                }
+
+                return true;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                if (mChildView != null) {
+                    if (offsetY >= mPullHeight) {
+                        //拉到了最下面
+                        animChildView(State.REFRESHING, offsetY, 0);
+                        if (refreshListener != null) {
+                            refreshListener.onRefresh(this);
+                        }
+                        centerAnim();
+
+                    } else {//没有拉到了最下面
+                        animChildView(State.RELEASE, 0, 300);
+                    }
+
+                } else {
+                    setState(State.IDLE);
+                }
+                return true;
+            default:
+                return super.onTouchEvent(e);
+        }
+    }
+
+    private void removeAnimView() {
+        if (mHeadLayout !=null){
+            View view = mHeadLayout.getChildAt(0);
+            if (view != null && TextUtils.equals("PLACEHOLDER", (String) view.getTag())) {
+                mHeadLayout.removeView(view);
+            }
+        }
+    }
+
+    private ObjectAnimator rotationY;
+
+    private void centerAnim() {
+        if (rotationY == null)
+            rotationY = ObjectAnimator.ofFloat(centerImage, "rotationY", 0, 360, 0).setDuration(1000);
+        rotationY.cancel();
+        rotationY.setRepeatCount(ObjectAnimator.INFINITE);
+        rotationY.start();
+    }
+
+    private void cancelCenterAnim() {
+        if (rotationY != null) {
+            rotationY.cancel();
+        }
+    }
+
+    public void setRefreshing(boolean refreshing) {
+        if (refreshing) {
+            animChildView(State.DRAGGING, mPullHeight, 300);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setState(State.REFRESHING);
+                }
+            }, 300);
+        } else {
+            animChildView(State.RELEASE, 0, 300);
+        }
+    }
+
+    public void setRefreshing(boolean refreshing, String success) {
+        if (refreshing) {
+            animChildView(State.DRAGGING, mPullHeight, 300);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setState(State.REFRESHING);
+                }
+            }, 300);
+        } else {
+            setState(State.LOADFINISH);
+            mapHeaderState(State.LOADFINISH);
+            mHeadLayout.setCenterText(success);
+            if (centerImage != null) {
+                centerImage.setImageBitmap(centerBits[1]);
+                cancelCenterAnim();
+            }
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    animChildView(State.RELEASE, 0, 300);
+                }
+            }, 1000);
+        }
+    }
+
+    public void setRefreshing(boolean refreshing, String success, Bitmap successIcon) {
+        if (refreshing) {
+            animChildView(State.DRAGGING, mPullHeight, 300);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setState(State.REFRESHING);
+                }
+            }, 300);
+        } else {
+            mHeadLayout.setCenterText(success);
+            if (centerImage != null) {
+                centerImage.setImageBitmap(successIcon);
+                cancelCenterAnim();
+            }
+            mapHeaderState(State.LOADFINISH);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    animChildView(State.RELEASE, 0, 300);
+                }
+            }, 1000);
+        }
+    }
+
+    private void animChildView(State state, float endValue, long duration) {
+        setState(state);
+        mapHeaderState(state);
+        ObjectAnimator oa = ObjectAnimator.ofFloat(mChildView, "translationY", endValue);
+        oa.setDuration(duration);
+        oa.setInterpolator(new DecelerateInterpolator());
+        oa.addListener(new com.nineoldandroids.animation.Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {
+                switch (getState()){
+                    case RELEASE:
+                        cancelCenterAnim();
+                        removeAnimView();
+                        break;
+                }
+
+            }
+
+            @Override
+            public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
+                switch (getState()) {
+                    case REFRESHING:
+                        setState(State.REFRESHING);
+                        break;
+                    case RELEASE:
+                        setState(State.IDLE);
+                        break;
+                    case DRAGGING:
+                        setState(State.IDLE);
+                        break;
+                    default:
+                        setState(State.IDLE);
+                        break;
+
+                }
+
+            }
+
+            @Override
+            public void onAnimationCancel(com.nineoldandroids.animation.Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(com.nineoldandroids.animation.Animator animation) {
+
+            }
+        });
+        oa.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                Log.d("PULL", value + "");
+                if (getState() != State.REFRESHING)
+                    onTranslationYChanged(value);
+            }
+        });
+        oa.start();
+    }
+
+    private void mapHeaderState(State state) {
+        switch (state) {
+            case LOADFINISH:
+                mHeadLayout.setState(5);
+                break;
+            case PERREFRESHING:
+                mHeadLayout.setState(4);
+                break;
+            case RELEASE:
+                mHeadLayout.setState(3);
+                break;
+            case REFRESHING:
+                mHeadLayout.setState(2);
+                break;
+            case DRAGGING:
+                mHeadLayout.setState(1);
+                break;
+            case IDLE:
+                mHeadLayout.setState(0);
+                break;
+
+        }
+    }
+
+    public void setHeaderLeft(Bitmap bitmap) {
+        if (mHeadLayout != null) {
+            mHeadLayout.setLeftBitmap(bitmap);
+        }
+    }
+
+    public void setHeaderRight(Bitmap bitmap) {
+        if (mHeadLayout != null) {
+            mHeadLayout.setRightBitmap(bitmap);
+        }
+    }
+
+    public void setHeaderCenter(Bitmap bitmap) {
+        if (mHeadLayout != null) {
+            mHeadLayout.setCenterBitmap(bitmap);
+            if (centerBits != null) {
+                centerBits[0] = bitmap;
+            }
+        }
+    }
+
+}
