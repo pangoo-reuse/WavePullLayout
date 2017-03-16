@@ -102,7 +102,7 @@ public class PullLayout extends FrameLayout {
             this.addView(mHeadLayout);
         }
         array.recycle();
-        array.recycle();
+        
     }
 
 
