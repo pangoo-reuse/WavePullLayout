@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 android {
     //设置JDK1.8
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+//    compileOptions {
+//        sourceCompatibility JavaVersion.VERSION_1_7
+//        targetCompatibility JavaVersion.VERSION_1_7
+//    }
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
 
@@ -29,3 +29,4 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.android.support:support-v4:25.2.0'
 }
+apply from: "update.gradle"

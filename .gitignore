@@ -100,6 +100,7 @@ freeline/
 freeline_project_description.json
 ### Gradle template
 .gradle
+wavepulllayout/build.gradle
 /build/
 
 # Ignore Gradle GUI config
