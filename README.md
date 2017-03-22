@@ -14,14 +14,17 @@
        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
        See the License for the specific language governing permissions and
        limitations under the License.
-`project  is a library for pull to refresh,use  Seibel line`
+
+
+
+**`project  is a library for pull to refresh,use  Seibel line`**
 
     Supports Pulling Down from the top.
     Animated Scrolling for all devices.
     Over Scroll supports for devices on Android v2.2+.
 
     
-`Currently works with:`
+**`Currently works with:`**
     
     ListView
     ExpandableListView
@@ -30,11 +33,39 @@
     ScrollView
     ViewPager
 
-`this project compile : support-v4 , nineoldandroids`
+**`this project compile : support-v4 , nineoldandroids`**
 so  if you use this library ,you unnecessary compile "support-v4 , nineoldandroids" 
 for your project
 
-`thanks for NineOldAndroids:` https://github.com/JakeWharton/NineOldAndroids
+**`how to use it`**
+    xml :
+    
+    <com.xy.open.wavepulllayout. PullLayout 
+         android:id="@+id/pull"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         app:xy_headCenterImage="@mipmap/main_gold"
+         app:xy_headCenterSuccessImage="@mipmap/main_success"
+         app:xy_headLeftImage="@mipmap/main_left_huaxing"
+         app:xy_headRightImage="@mipmap/main_right_xinlang"
+         app:xy_textColor="@color/colorAccent"
+         app:xy_textSize="15sp"
+         app:xy_waveColor="@color/colorAccent"
+         app:xy_bgColor="@color/colorPrimaryDark"
+         app:xy_pullHeight="180dp"
+         app:xy_headerHeight="100dp"
+         >
+         
+         <ListView
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@color/colorPrimary" />
+             
+     </com.xy.open.wavepulllayout.PullLayout> 
+     
+     
+     
+**`thanks for NineOldAndroids:`** https://github.com/JakeWharton/NineOldAndroids
 
 
 	Supports Pulling Down from the top.
@@ -54,10 +85,11 @@ for your project
 	you unnecessary compile "support-v4 , nineoldandroids" for your project
 
 	thanks for NineOldAndroids :https://github.com/JakeWharton/NineOldAndroids
-`Gradle:`
+**`Gradle:`**
+
 	compile 'com.xy.open.wavepulllayout:wavepulllayout:1.0.0'
 	
-`this is GIF for you :`
+**`this is GIF for you :`**
   ![image](https://github.com/YongHsiung/WavePullLayout/blob/master/anim.gif)
 
 
