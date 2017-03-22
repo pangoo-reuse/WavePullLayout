@@ -100,7 +100,6 @@ freeline/
 freeline_project_description.json
 ### Gradle template
 .gradle
-wavepulllayout/build.gradle
 /build/
 
 # Ignore Gradle GUI config
@@ -116,3 +115,9 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 wavepulllayout/jcenter.gradle
+app/libs/
+app/src/main/res/drawable/
+wavepulllayout/libs/
+wavepulllayout/src/main/res/drawable/
+wavepulllayout/src/main/res/value-en/
+/wavepulllayout/update.gradle
