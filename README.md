@@ -86,8 +86,10 @@ for your project
 
 	thanks for NineOldAndroids :https://github.com/JakeWharton/NineOldAndroids
 **`Gradle:`**
-
-	compile 'com.xy.open.wavepulllayout:wavepulllayout:1.0.0'
+this can install newest library
+	
+	compile 'com.xy.open.wavepulllayout:wavepulllayout:latest.integration'
+	
 	
 **`this is GIF for you :`**
   ![image](https://github.com/YongHsiung/WavePullLayout/blob/master/anim.gif)
