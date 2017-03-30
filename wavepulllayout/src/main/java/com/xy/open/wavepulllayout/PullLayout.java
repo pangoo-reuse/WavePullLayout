@@ -10,7 +10,6 @@ import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
@@ -39,7 +37,6 @@ public class PullLayout extends FrameLayout {
     private float mHeaderHeight;
     private static DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(10);
     private RefreshListener refreshListener;
-    private ImageView centerImage;
     private int bgColor;
     private int waveColor;
 
@@ -66,14 +63,14 @@ public class PullLayout extends FrameLayout {
         float headerHeight = array.getDimension(R.styleable.waveRefreshLayout_xy_headerHeight, mHeaderHeight);
         float pullHeight = array.getDimension(R.styleable.waveRefreshLayout_xy_pullHeight, mPullHeight);
         int textColor = array.getColor(R.styleable.waveRefreshLayout_xy_textColor, Color.GRAY);
-        float textSize = array.getDimension(R.styleable.waveRefreshLayout_xy_textSize, dp2px(getContext(),15));
+        float textSize = array.getDimension(R.styleable.waveRefreshLayout_xy_textSize, dp2px(getContext(), 15));
         int headerLeftImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headLeftImage, 0);
         int headerRightImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headRightImage, 0);
         int headerCenterImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterImage, 0);
         int headerCenterSuccessImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterSuccessImage, 0);
-        mHeaderHeight = headerHeight == 0 ? dp2px(getContext(),150) :headerHeight;
+        mHeaderHeight = headerHeight == 0 ? dp2px(getContext(), 150) : headerHeight;
 
-        mPullHeight = pullHeight == 0 ? dp2px(getContext(),100) :pullHeight;
+        mPullHeight = pullHeight == 0 ? dp2px(getContext(), 100) : pullHeight;
 
         if (mHeadLayout == null) {
             mHeadLayout = new HeaderLayout(getContext());
@@ -81,23 +78,18 @@ public class PullLayout extends FrameLayout {
             mHeadLayout.setColor(bgColor);
             mHeadLayout.setTextColor(textColor);
             mHeadLayout.setTextSize(textSize);
-            mHeadLayout.setLeftBitmap(BitmapFactory.decodeResource(getResources(),headerLeftImage));
-            mHeadLayout.setRightBitmap(BitmapFactory.decodeResource(getResources(),headerRightImage));
+            mHeadLayout.setLeftBitmap(BitmapFactory.decodeResource(getResources(), headerLeftImage));
+            mHeadLayout.setRightBitmap(BitmapFactory.decodeResource(getResources(), headerRightImage));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mHeadLayout.setElevation(getElevation());
             }
             //添加头部
             LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-            params.gravity = Gravity.TOP|Gravity.CENTER;
+            params.gravity = Gravity.TOP | Gravity.CENTER;
             mHeadLayout.setLayoutParams(params);
-            centerImage = new ImageView(getContext());
             Bitmap normal = BitmapFactory.decodeResource(getResources(), headerCenterImage);
             Bitmap success = BitmapFactory.decodeResource(getResources(), headerCenterSuccessImage);
-            centerImage.setImageBitmap(normal);
-            LayoutParams cpms = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            centerImage.setLayoutParams(cpms);
-            centerImage.setTag("PLACEHOLDER");
             initCenter(normal, success);
             this.addView(mHeadLayout);
         }
@@ -105,8 +97,8 @@ public class PullLayout extends FrameLayout {
     }
 
 
-
     private Bitmap[] centerBits;
+
     private void initCenter(Bitmap normal, Bitmap success) {
         if (centerBits == null)
             centerBits = new Bitmap[2];
@@ -135,13 +127,6 @@ public class PullLayout extends FrameLayout {
 
     }
 
-    private void resetCenter() {
-        if (centerImage != null) {
-            if (centerBits != null)
-                centerImage.setImageBitmap(centerBits[0]);
-        }
-    }
-
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -162,8 +147,8 @@ public class PullLayout extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                resetCenter();
                 mStartTouchY = ev.getY();
+                mHeadLayout.setCenterBitmap(centerBits[0]);
                 if (state != State.IDLE) {
                     return true;
                 }
@@ -220,7 +205,6 @@ public class PullLayout extends FrameLayout {
     public final boolean onTouchEvent(MotionEvent e) {
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
-                resetCenter();
                 mCurrentY = e.getY();
                 float dy = constrains(
                         0,
@@ -229,20 +213,6 @@ public class PullLayout extends FrameLayout {
                 if (mChildView != null) {
                     offsetY = decelerateInterpolator.getInterpolation(dy / mPullHeight / 2) * dy / 2;
                     State state = State.DRAGGING;
-                    if (offsetY == mPullHeight) {
-                        state = State.PERREFRESHING;
-                        float[] location = mHeadLayout.getLocation();
-                        float left = location[0];
-                        float top = location[1];
-                        LayoutParams params = (LayoutParams) centerImage.getLayoutParams();
-                        params.leftMargin = (int) left;
-                        params.topMargin = (int) top;
-                        mHeadLayout.removeView(centerImage);
-                        mHeadLayout.addView(centerImage, params);
-                    } else {
-                        removeAnimView();
-//
-                    }
                     LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
                     params.height = (int) offsetY;
                     mHeadLayout.setLayoutParams(params);
@@ -259,8 +229,6 @@ public class PullLayout extends FrameLayout {
                         if (refreshListener != null) {
                             refreshListener.onRefresh(this);
                         }
-                        centerAnim();
-
                     } else {//no bottom
                         animChildView(State.RELEASE, 0, 300);
                     }
@@ -274,30 +242,6 @@ public class PullLayout extends FrameLayout {
         }
     }
 
-    private void removeAnimView() {
-        if (mHeadLayout !=null){
-            View view = mHeadLayout.getChildAt(0);
-            if (view != null && TextUtils.equals("PLACEHOLDER", (String) view.getTag())) {
-                mHeadLayout.removeView(view);
-            }
-        }
-    }
-
-    private ObjectAnimator rotationY;
-
-    private void centerAnim() {
-        if (rotationY == null)
-            rotationY = ObjectAnimator.ofFloat(centerImage, "rotationY", 0, 360, 0).setDuration(1000);
-        rotationY.cancel();
-        rotationY.setRepeatCount(ObjectAnimator.INFINITE);
-        rotationY.start();
-    }
-
-    private void cancelCenterAnim() {
-        if (rotationY != null) {
-            rotationY.cancel();
-        }
-    }
 
     public void setRefreshing(boolean refreshing) {
         if (refreshing) {
@@ -326,10 +270,7 @@ public class PullLayout extends FrameLayout {
             setState(State.LOADFINISH);
             mapHeaderState(State.LOADFINISH);
             mHeadLayout.setCenterText(success);
-            if (centerImage != null) {
-                centerImage.setImageBitmap(centerBits[1]);
-                cancelCenterAnim();
-            }
+            mHeadLayout.setCenterBitmap(centerBits[1]);
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -350,10 +291,7 @@ public class PullLayout extends FrameLayout {
             }, 300);
         } else {
             mHeadLayout.setCenterText(success);
-            if (centerImage != null) {
-                centerImage.setImageBitmap(successIcon);
-                cancelCenterAnim();
-            }
+            mHeadLayout.setCenterBitmap(successIcon);
             mapHeaderState(State.LOADFINISH);
             postDelayed(new Runnable() {
                 @Override
@@ -373,10 +311,8 @@ public class PullLayout extends FrameLayout {
         oa.addListener(new com.nineoldandroids.animation.Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {
-                switch (getState()){
+                switch (getState()) {
                     case RELEASE:
-                        cancelCenterAnim();
-                        removeAnimView();
                         break;
                 }
 

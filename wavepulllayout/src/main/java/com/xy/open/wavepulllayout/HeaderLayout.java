@@ -2,8 +2,10 @@ package com.xy.open.wavepulllayout;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -53,6 +55,8 @@ class HeaderLayout extends FrameLayout {
     private int color;
     private int textColor;
     private float textSize;
+    private Camera camera;
+    private Matrix matrix;
 
     public void setState(int state) {
         this.mState = state;
@@ -65,14 +69,14 @@ class HeaderLayout extends FrameLayout {
 
     public void setTextColor(int textColor) {
         this.textColor = textColor;
-        if (mTpaint !=null){
+        if (mTpaint != null) {
             mTpaint.setColor(textColor);
         }
     }
 
     public void setTextSize(float textSize) {
         this.textSize = textSize;
-        if (mTpaint !=null){
+        if (mTpaint != null) {
             mTpaint.setTextSize(textSize);
         }
     }
@@ -132,8 +136,8 @@ class HeaderLayout extends FrameLayout {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setFilterBitmap(true);
-
-
+        camera = new Camera();
+        matrix = new Matrix();
         mPath = new Path();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -178,6 +182,8 @@ class HeaderLayout extends FrameLayout {
         drawPulling(canvas);
     }
 
+    private int rotateY = 1;
+
     private void drawPulling(Canvas canvas) {
 
         final int width = canvas.getWidth();
@@ -199,8 +205,20 @@ class HeaderLayout extends FrameLayout {
         if (lbmp != null) {
             canvas.drawBitmap(lbmp, width / 4 - lbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
         }
-
+        mTpaint.getTextBounds(tips, 0, tips.length(), tRect);
+        canvas.drawText(tips, width / 2 - tRect.width() / 2, mPullHeight - offsetY / 2 + tRect.height() / 2, mTpaint);
+        if (rbmp != null) {
+            canvas.drawBitmap(rbmp, 3 * width / 4 - rbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
+        }
         if (cbmp != null) {
+            float x = width / 2 - cbmp.getWidth() / 2;
+            float y = mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY;
+            int cw = cbmp.getWidth();
+            int ch = cbmp.getHeight();
+            //获取中心点坐标
+            float centerX = cw/2f;
+            float centerY = ch / 2f;
+
             switch (mState) {
                 case STATE_RELEASE:
                     canvas.drawBitmap(cbmp, width / 2 - cbmp.getWidth() / 2, (mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY), mPaint);
@@ -210,27 +228,45 @@ class HeaderLayout extends FrameLayout {
                     break;
                 case STATE_DRAGGING:
                     tips = setText(getResources().getString(R.string.pulling));
-                    int x = width / 2 - cbmp.getWidth() / 2;
-                    float y = mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY;
                     canvas.drawBitmap(cbmp, x, (y), mPaint);
                     setLocation(x, y);
                     Log.d("LOCATION", "X = " + x + "Y = " + y);
                     break;
                 case STATE_PERREFRESHING:
                     tips = setText(getResources().getString(R.string.release_loading));
+                    canvas.drawBitmap(cbmp, width / 2 - cbmp.getWidth() / 2, (mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY), mPaint);
                     break;
                 case STATE_REFRESHING:
                     tips = setText(getResources().getString(R.string.refreshing));
+
+                    camera.save();
+                    //绕X轴翻转
+//                    camera.rotateX(-deltaY);
+                    //绕Y轴翻转
+                    camera.rotateY(rotateY+=5);
+                    //设置camera作用矩阵
+                    camera.getMatrix(matrix);
+                    camera.restore();
+                    //设置翻转中心点
+                    matrix.preTranslate(-centerX, -centerY);
+                    matrix.postTranslate(centerX, centerY);
+
+
+                    if (cw > 0 && ch > 0) {
+                        try {
+                            canvas.translate(x, y);
+                            canvas.drawBitmap(cbmp, matrix, null);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("Width", " cbmp.getWidth() =" + cbmp.getWidth() + " cbmp.getHeight() = " + cbmp.getHeight());
+                        }
+                    }
+                    postInvalidate();
                     break;
                 case STATE_LOADFINISH:
-
+                    canvas.drawBitmap(cbmp, width / 2 - cbmp.getWidth() / 2, (mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY), mPaint);
                     break;
             }
-        }
-        mTpaint.getTextBounds(tips, 0, tips.length(), tRect);
-        canvas.drawText(tips, width / 2 - tRect.width() / 2, mPullHeight - offsetY / 2 + tRect.height() / 2, mTpaint);
-        if (rbmp != null) {
-            canvas.drawBitmap(rbmp, 3 * width / 4 - rbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setOutlineProvider(mViewOutlineProvider);
