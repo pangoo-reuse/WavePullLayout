@@ -23,11 +23,14 @@ import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Created by 171842474@qq.com on 2017/3/14.
  */
-class HeaderLayout extends FrameLayout {
 
+class HeaderLayout extends FrameLayout {
     private Paint mPaint;
     private Path mPath;
     @ColorInt
@@ -92,7 +95,7 @@ class HeaderLayout extends FrameLayout {
     public int getTextColor() {
         return textColor;
     }
-
+    @Retention(RetentionPolicy.SOURCE)
     @IntDef({STATE_IDLE,
             STATE_DRAGGING,
             STATE_REFRESHING,
