@@ -39,6 +39,8 @@ public class PullLayout extends FrameLayout {
     private RefreshListener refreshListener;
     private int bgColor;
     private int waveColor;
+    private int defaultMode = 2;
+    private int mode;
 
     public PullLayout(@NonNull Context context) {
         this(context, null);
@@ -68,18 +70,20 @@ public class PullLayout extends FrameLayout {
         int headerRightImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headRightImage, 0);
         int headerCenterImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterImage, 0);
         int headerCenterSuccessImage = array.getResourceId(R.styleable.waveRefreshLayout_xy_headCenterSuccessImage, 0);
+        mode = array.getInt(R.styleable.waveRefreshLayout_xy_mode,defaultMode);
         mHeaderHeight = headerHeight == 0 ? dp2px(getContext(), 150) : headerHeight;
 
         mPullHeight = pullHeight == 0 ? dp2px(getContext(), 100) : pullHeight;
 
         if (mHeadLayout == null) {
-            mHeadLayout = new HeaderLayout(getContext());
+            mHeadLayout = new HeaderLayout(getContext(),mode);
             mHeadLayout.setWaveColor(waveColor);
             mHeadLayout.setColor(bgColor);
             mHeadLayout.setTextColor(textColor);
             mHeadLayout.setTextSize(textSize);
             mHeadLayout.setLeftBitmap(BitmapFactory.decodeResource(getResources(), headerLeftImage));
             mHeadLayout.setRightBitmap(BitmapFactory.decodeResource(getResources(), headerRightImage));
+            mHeadLayout.setMode(mode);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mHeadLayout.setElevation(getElevation());

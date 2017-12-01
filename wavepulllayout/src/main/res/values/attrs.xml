@@ -11,5 +11,9 @@
         <attr name="xy_headRightImage" format="reference"/>
         <attr name="xy_headCenterImage" format="reference"/>
         <attr name="xy_headCenterSuccessImage" format="reference"/>
+        <attr name="xy_mode" format="enum">
+            <enum name="single" value="1"/>
+            <enum name="multi" value="2"/>
+        </attr>
     </declare-styleable>
 </resources>

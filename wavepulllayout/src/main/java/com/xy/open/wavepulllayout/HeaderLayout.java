@@ -60,6 +60,8 @@ class HeaderLayout extends FrameLayout {
     private float textSize;
     private Camera camera;
     private Matrix matrix;
+    private int mode;
+
 
     public void setState(int state) {
         this.mState = state;
@@ -95,6 +97,7 @@ class HeaderLayout extends FrameLayout {
     public int getTextColor() {
         return textColor;
     }
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({STATE_IDLE,
             STATE_DRAGGING,
@@ -107,6 +110,11 @@ class HeaderLayout extends FrameLayout {
 
     @HeaderLayout.State
     private int mState = STATE_IDLE;
+
+    public HeaderLayout(Context context, int mode) {
+        this(context);
+        this.mode = mode;
+    }
 
     public HeaderLayout(Context context) {
         this(context, null);
@@ -205,21 +213,36 @@ class HeaderLayout extends FrameLayout {
         canvas.drawPath(mPath, mPaint);
 
         offsetY = decelerateInterpolator.getInterpolation(mHeaderHeight / mPullHeight / 2) * mHeaderHeight / 4;
-        if (lbmp != null) {
-            canvas.drawBitmap(lbmp, width / 4 - lbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
+        if (mode != 1) {
+            if (lbmp != null) {
+                canvas.drawBitmap(lbmp, width / 4 - lbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
+            }
         }
+
         mTpaint.getTextBounds(tips, 0, tips.length(), tRect);
         canvas.drawText(tips, width / 2 - tRect.width() / 2, mPullHeight - offsetY / 2 + tRect.height() / 2, mTpaint);
-        if (rbmp != null) {
-            canvas.drawBitmap(rbmp, 3 * width / 4 - rbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
+        if (mode != 1) {
+            if (rbmp != null) {
+                canvas.drawBitmap(rbmp, 3 * width / 4 - rbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - rbmp.getHeight() - offsetY), mPaint);
+            }
         }
+        if (mode == 1) {
+            if (lbmp != null && rbmp != null)
+                throw new RuntimeException("current mode is single bitmap ,please set one bitmap or remove other bitmap");
+            if (lbmp != null) {
+                canvas.drawBitmap(lbmp, width / 2 - lbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
+            } else if (rbmp != null) {
+                canvas.drawBitmap(rbmp, width / 2 - rbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - rbmp.getHeight() - offsetY), mPaint);
+            }
+        }
+
         if (cbmp != null) {
             float x = width / 2 - cbmp.getWidth() / 2;
             float y = mPullHeight/* - mHeaderHeight */ - cbmp.getHeight() - offsetY;
             int cw = cbmp.getWidth();
             int ch = cbmp.getHeight();
             //获取中心点坐标
-            float centerX = cw/2f;
+            float centerX = cw / 2f;
             float centerY = ch / 2f;
 
             switch (mState) {
@@ -246,7 +269,7 @@ class HeaderLayout extends FrameLayout {
                     //绕X轴翻转
 //                    camera.rotateX(-deltaY);
                     //绕Y轴翻转
-                    camera.rotateY(rotateY+=5);
+                    camera.rotateY(rotateY += 5);
                     //设置camera作用矩阵
                     camera.getMatrix(matrix);
                     camera.restore();
@@ -305,10 +328,11 @@ class HeaderLayout extends FrameLayout {
     public void setRightBitmap(Bitmap rbmp) {
         this.rbmp = rbmp;
         postInvalidate();
-
-
     }
 
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
 
     public void setCenterBitmap(Bitmap cbmp) {
         this.cbmp = cbmp;

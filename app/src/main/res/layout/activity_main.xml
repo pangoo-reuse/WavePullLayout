@@ -4,16 +4,16 @@
     android:id="@+id/pull"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:xy_bgColor="@color/colorPrimaryDark"
     app:xy_headCenterImage="@mipmap/main_gold"
     app:xy_headCenterSuccessImage="@mipmap/main_success"
     app:xy_headLeftImage="@mipmap/main_left_huaxing"
-    app:xy_headRightImage="@mipmap/main_right_xinlang"
+    app:xy_headerHeight="100dp"
+    app:xy_mode="single"
+    app:xy_pullHeight="180dp"
     app:xy_textColor="@color/colorAccent"
     app:xy_textSize="15sp"
     app:xy_waveColor="@color/colorAccent"
-    app:xy_bgColor="@color/colorPrimaryDark"
-    app:xy_pullHeight="180dp"
-    app:xy_headerHeight="100dp"
 
     >
 

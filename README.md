@@ -37,6 +37,10 @@
 so  if you use this library ,you unnecessary compile "support-v4 , nineoldandroids" 
 for your project
 
+**`new method added `**
+
+    app:xy_mode="single"
+
 **`how to use it`**
     xml :
     
