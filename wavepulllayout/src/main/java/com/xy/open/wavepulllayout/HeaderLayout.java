@@ -212,7 +212,7 @@ class HeaderLayout extends FrameLayout {
 
         canvas.drawPath(mPath, mPaint);
 
-        offsetY = decelerateInterpolator.getInterpolation(mHeaderHeight / mPullHeight / 2) * mHeaderHeight / 4;
+        offsetY = decelerateInterpolator.getInterpolation(mHeaderHeight / mPullHeight / 2) * mHeaderHeight / 3;
         if (mode != 1) {
             if (lbmp != null) {
                 canvas.drawBitmap(lbmp, width / 4 - lbmp.getWidth() / 2, (mPullHeight - mHeaderHeight - lbmp.getHeight() - offsetY), mPaint);
